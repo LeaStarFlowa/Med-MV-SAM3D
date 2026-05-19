@@ -1,0 +1,9 @@
+dataset: BTCV
+organ: liver
+label: 6
+modality: CT
+window_level: 40
+window_width: 400
+slice_top_k: 3
+voxel_grid_size: 64
+candidate_points: 10000

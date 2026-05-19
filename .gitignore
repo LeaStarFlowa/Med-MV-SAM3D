@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+
+# Data
+data/raw/
+data/processed/
+datasets/
+
+# Outputs
+outputs/
+runs/
+checkpoints/
+logs/
+wandb/
+
+# Large files
+*.nii
+*.nii.gz
+*.pth
+*.pt
+*.ckpt
+*.onnx
+*.ply
+*.obj
+*.glb
+*.npz
+
+# System
+.DS_Store
+Thumbs.db

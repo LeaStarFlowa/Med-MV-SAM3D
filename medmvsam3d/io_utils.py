@@ -8,6 +8,26 @@ import numpy as np
 from PIL import Image
 
 
+PLY_DTYPE_MAP = {
+    "char": "i1",
+    "int8": "i1",
+    "uchar": "u1",
+    "uint8": "u1",
+    "short": "i2",
+    "int16": "i2",
+    "ushort": "u2",
+    "uint16": "u2",
+    "int": "i4",
+    "int32": "i4",
+    "uint": "u4",
+    "uint32": "u4",
+    "float": "f4",
+    "float32": "f4",
+    "double": "f8",
+    "float64": "f8",
+}
+
+
 def ensure_dir(path: str | Path) -> Path:
     path = Path(path)
     path.mkdir(parents=True, exist_ok=True)
@@ -88,10 +108,62 @@ def save_point_cloud_ply(points: np.ndarray, path: str | Path) -> None:
 
 def load_point_cloud_ply(path: str | Path) -> np.ndarray:
     path = Path(path)
-    lines = path.read_text(encoding="utf-8").splitlines()
-    end = lines.index("end_header")
-    rows = [line.split()[:3] for line in lines[end + 1 :] if line.strip()]
-    if not rows:
-        return np.empty((0, 3), dtype=np.float32)
-    return np.asarray(rows, dtype=np.float32)
+    data = path.read_bytes()
+    header_end = data.find(b"end_header")
+    if header_end < 0:
+        raise ValueError(f"{path} is not a valid PLY file: missing end_header.")
 
+    body_start = data.find(b"\n", header_end)
+    if body_start < 0:
+        raise ValueError(f"{path} is not a valid PLY file: truncated header.")
+    body_start += 1
+
+    header = data[:body_start].decode("latin1").splitlines()
+    fmt = "ascii"
+    vertex_count = 0
+    vertex_properties: list[tuple[str, str]] = []
+    current_element: str | None = None
+
+    for line in header:
+        parts = line.strip().split()
+        if not parts:
+            continue
+        if parts[0] == "format":
+            fmt = parts[1]
+        elif parts[0] == "element":
+            current_element = parts[1]
+            if current_element == "vertex":
+                vertex_count = int(parts[2])
+        elif parts[0] == "property" and current_element == "vertex":
+            if len(parts) >= 3 and parts[1] != "list":
+                vertex_properties.append((parts[2], parts[1]))
+
+    if vertex_count == 0:
+        return np.empty((0, 3), dtype=np.float32)
+    property_names = [name for name, _ in vertex_properties]
+    for required in ("x", "y", "z"):
+        if required not in property_names:
+            raise ValueError(f"{path} has no vertex property '{required}'.")
+
+    if fmt == "ascii":
+        text = data[body_start:].decode("latin1")
+        rows = [line.split() for line in text.splitlines() if line.strip()]
+        if not rows:
+            return np.empty((0, 3), dtype=np.float32)
+        arr = np.asarray(rows[:vertex_count], dtype=np.float32)
+        x_idx, y_idx, z_idx = (property_names.index(name) for name in ("x", "y", "z"))
+        return arr[:, [x_idx, y_idx, z_idx]].astype(np.float32)
+
+    if fmt not in {"binary_little_endian", "binary_big_endian"}:
+        raise ValueError(f"Unsupported PLY format in {path}: {fmt}")
+
+    endian = "<" if fmt == "binary_little_endian" else ">"
+    dtype_fields = []
+    for name, ply_type in vertex_properties:
+        if ply_type not in PLY_DTYPE_MAP:
+            raise ValueError(f"Unsupported PLY property type in {path}: {ply_type}")
+        dtype_fields.append((name, endian + PLY_DTYPE_MAP[ply_type]))
+    dtype = np.dtype(dtype_fields)
+    vertices = np.frombuffer(data, dtype=dtype, count=vertex_count, offset=body_start)
+    points = np.stack([vertices["x"], vertices["y"], vertices["z"]], axis=1)
+    return np.asarray(points, dtype=np.float32)

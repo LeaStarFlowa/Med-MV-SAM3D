@@ -1,7 +1,7 @@
 {
   "case_id": "0",
-  "organ": "kidney",
-  "label": null,
+  "organ": "liver",
+  "label": 6,
   "modality": "CT",
   "scan_shape": [
     512,
@@ -44,5 +44,5 @@
       1.0
     ]
   ],
-  "mask_voxels": 2428445
+  "mask_voxels": 1298572
 }

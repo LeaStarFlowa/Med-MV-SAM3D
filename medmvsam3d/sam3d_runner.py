@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import os
+import subprocess
+
 from pathlib import Path
 
 import numpy as np
 
-from .io_utils import ensure_dir, load_mask_png, save_point_cloud_ply
+from .io_utils import ensure_dir, load_mask_png, save_point_cloud_ply, load_point_cloud_ply
 
 
 def _sample_ellipsoid_from_mask(mask: np.ndarray, n_points: int = 10000, seed: int = 0) -> np.ndarray:
@@ -56,10 +59,35 @@ def run_sam3d(
     seed: int = 0,
 ) -> np.ndarray:
     ensure_dir(Path(output_path).parent)
+
     if use_stub:
         return run_sam3d_stub(image_path, mask_path, output_path, n_points=n_points, seed=seed)
-    raise NotImplementedError(
-        "Real SAM3D integration is not configured yet. Replace medmvsam3d.sam3d_runner.run_sam3d "
-        "with a call to the local SAM3D inference environment."
-    )
+    
+    project_root = Path(__file__).resolve().parents[1]
+    wrapper = project_root / "scripts" / "sam3d_infer_one.py"
+    python_bin = os.environ.get("SAM3D_PYTHON", "python")
+
+    cmd = [
+        python_bin,
+        str(wrapper),
+        "--image",
+        str(image_path),
+        "--mask",
+        str(mask_path),
+        "--output",
+        str(output_path),
+        "--seed",
+        str(seed),
+    ]
+
+    sam3d_repo = os.environ.get("SAM3D_REPO")
+    sam3d_config = os.environ.get("SAM3D_CONFIG")
+    if sam3d_repo:
+        cmd += ["--sam3d-repo", sam3d_repo]
+    if sam3d_config:
+        cmd += ["--config", sam3d_config]
+
+    subprocess.run(cmd, check=True)
+
+    return load_point_cloud_ply(output_path)
 

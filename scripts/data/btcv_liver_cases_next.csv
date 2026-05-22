@@ -1,0 +1,6 @@
+case_id,scan,mask
+case005,scripts/data/abdomen/imagesTr/img0006.nii.gz,scripts/data/abdomen/labelsTr/label0006.nii.gz
+case006,scripts/data/abdomen/imagesTr/img0007.nii.gz,scripts/data/abdomen/labelsTr/label0007.nii.gz
+case007,scripts/data/abdomen/imagesTr/img0008.nii.gz,scripts/data/abdomen/labelsTr/label0008.nii.gz
+case008,scripts/data/abdomen/imagesTr/img0009.nii.gz,scripts/data/abdomen/labelsTr/label0009.nii.gz
+case009,scripts/data/abdomen/imagesTr/img0010.nii.gz,scripts/data/abdomen/labelsTr/label0010.nii.gz

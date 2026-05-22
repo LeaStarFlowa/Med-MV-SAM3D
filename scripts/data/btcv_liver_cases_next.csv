@@ -1,6 +1,11 @@
 case_id,scan,mask
-case005,scripts/data/abdomen/imagesTr/img0006.nii.gz,scripts/data/abdomen/labelsTr/label0006.nii.gz
-case006,scripts/data/abdomen/imagesTr/img0007.nii.gz,scripts/data/abdomen/labelsTr/label0007.nii.gz
-case007,scripts/data/abdomen/imagesTr/img0008.nii.gz,scripts/data/abdomen/labelsTr/label0008.nii.gz
-case008,scripts/data/abdomen/imagesTr/img0009.nii.gz,scripts/data/abdomen/labelsTr/label0009.nii.gz
-case009,scripts/data/abdomen/imagesTr/img0010.nii.gz,scripts/data/abdomen/labelsTr/label0010.nii.gz
+case010,scripts/data/abdomen/imagesTr/img0021.nii.gz,scripts/data/abdomen/labelsTr/label0021.nii.gz
+case011,scripts/data/abdomen/imagesTr/img0022.nii.gz,scripts/data/abdomen/labelsTr/label0022.nii.gz
+case012,scripts/data/abdomen/imagesTr/img0023.nii.gz,scripts/data/abdomen/labelsTr/label0023.nii.gz
+case013,scripts/data/abdomen/imagesTr/img0024.nii.gz,scripts/data/abdomen/labelsTr/label0024.nii.gz
+case014,scripts/data/abdomen/imagesTr/img0025.nii.gz,scripts/data/abdomen/labelsTr/label0025.nii.gz
+case015,scripts/data/abdomen/imagesTr/img0026.nii.gz,scripts/data/abdomen/labelsTr/label0026.nii.gz
+case016,scripts/data/abdomen/imagesTr/img0027.nii.gz,scripts/data/abdomen/labelsTr/label0027.nii.gz
+case017,scripts/data/abdomen/imagesTr/img0028.nii.gz,scripts/data/abdomen/labelsTr/label0028.nii.gz
+case018,scripts/data/abdomen/imagesTr/img0029.nii.gz,scripts/data/abdomen/labelsTr/label0029.nii.gz
+case019,scripts/data/abdomen/imagesTr/img0030.nii.gz,scripts/data/abdomen/labelsTr/label0030.nii.gz

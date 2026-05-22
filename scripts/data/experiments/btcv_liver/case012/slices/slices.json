@@ -1,0 +1,85 @@
+{
+  "slices": [
+    {
+      "plane": "axial",
+      "index": 81,
+      "rank": 1,
+      "area": 40832,
+      "image_path": "scripts/data/experiments/btcv_liver/case012/slices/axial_01_idx0081.png",
+      "mask_path": "scripts/data/experiments/btcv_liver/case012/slices/axial_01_idx0081_mask.png",
+      "rgb_path": "scripts/data/experiments/btcv_liver/case012/slices/axial_01_idx0081_rgb.png"
+    },
+    {
+      "plane": "axial",
+      "index": 80,
+      "rank": 2,
+      "area": 40059,
+      "image_path": "scripts/data/experiments/btcv_liver/case012/slices/axial_02_idx0080.png",
+      "mask_path": "scripts/data/experiments/btcv_liver/case012/slices/axial_02_idx0080_mask.png",
+      "rgb_path": "scripts/data/experiments/btcv_liver/case012/slices/axial_02_idx0080_rgb.png"
+    },
+    {
+      "plane": "axial",
+      "index": 82,
+      "rank": 3,
+      "area": 38858,
+      "image_path": "scripts/data/experiments/btcv_liver/case012/slices/axial_03_idx0082.png",
+      "mask_path": "scripts/data/experiments/btcv_liver/case012/slices/axial_03_idx0082_mask.png",
+      "rgb_path": "scripts/data/experiments/btcv_liver/case012/slices/axial_03_idx0082_rgb.png"
+    },
+    {
+      "plane": "coronal",
+      "index": 322,
+      "rank": 1,
+      "area": 4342,
+      "image_path": "scripts/data/experiments/btcv_liver/case012/slices/coronal_01_idx0322.png",
+      "mask_path": "scripts/data/experiments/btcv_liver/case012/slices/coronal_01_idx0322_mask.png",
+      "rgb_path": "scripts/data/experiments/btcv_liver/case012/slices/coronal_01_idx0322_rgb.png"
+    },
+    {
+      "plane": "coronal",
+      "index": 323,
+      "rank": 2,
+      "area": 4325,
+      "image_path": "scripts/data/experiments/btcv_liver/case012/slices/coronal_02_idx0323.png",
+      "mask_path": "scripts/data/experiments/btcv_liver/case012/slices/coronal_02_idx0323_mask.png",
+      "rgb_path": "scripts/data/experiments/btcv_liver/case012/slices/coronal_02_idx0323_rgb.png"
+    },
+    {
+      "plane": "coronal",
+      "index": 321,
+      "rank": 3,
+      "area": 4317,
+      "image_path": "scripts/data/experiments/btcv_liver/case012/slices/coronal_03_idx0321.png",
+      "mask_path": "scripts/data/experiments/btcv_liver/case012/slices/coronal_03_idx0321_mask.png",
+      "rgb_path": "scripts/data/experiments/btcv_liver/case012/slices/coronal_03_idx0321_rgb.png"
+    },
+    {
+      "plane": "sagittal",
+      "index": 99,
+      "rank": 1,
+      "area": 4366,
+      "image_path": "scripts/data/experiments/btcv_liver/case012/slices/sagittal_01_idx0099.png",
+      "mask_path": "scripts/data/experiments/btcv_liver/case012/slices/sagittal_01_idx0099_mask.png",
+      "rgb_path": "scripts/data/experiments/btcv_liver/case012/slices/sagittal_01_idx0099_rgb.png"
+    },
+    {
+      "plane": "sagittal",
+      "index": 98,
+      "rank": 2,
+      "area": 4357,
+      "image_path": "scripts/data/experiments/btcv_liver/case012/slices/sagittal_02_idx0098.png",
+      "mask_path": "scripts/data/experiments/btcv_liver/case012/slices/sagittal_02_idx0098_mask.png",
+      "rgb_path": "scripts/data/experiments/btcv_liver/case012/slices/sagittal_02_idx0098_rgb.png"
+    },
+    {
+      "plane": "sagittal",
+      "index": 103,
+      "rank": 3,
+      "area": 4354,
+      "image_path": "scripts/data/experiments/btcv_liver/case012/slices/sagittal_03_idx0103.png",
+      "mask_path": "scripts/data/experiments/btcv_liver/case012/slices/sagittal_03_idx0103_mask.png",
+      "rgb_path": "scripts/data/experiments/btcv_liver/case012/slices/sagittal_03_idx0103_rgb.png"
+    }
+  ]
+}

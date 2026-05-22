@@ -1,7 +1,7 @@
 import nibabel as nib
 import numpy as np
 
-mask_path = "scripts/data/abdomen/labelsTr/label0005.nii.gz"
+mask_path = "scripts/data/abdomen/labelsTr/label0021.nii.gz"
 
 mask = nib.load(mask_path).get_fdata()
 vals, counts = np.unique(mask.astype(np.int32), return_counts=True)

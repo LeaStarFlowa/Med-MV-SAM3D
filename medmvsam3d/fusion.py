@@ -108,6 +108,31 @@ def _mask_contains(mask: np.ndarray, u: np.ndarray, v: np.ndarray) -> np.ndarray
     return mask[rows, cols] > 0
 
 
+def visual_hull_from_plane_masks(
+    plane_masks: dict[str, np.ndarray],
+    grid_size: int = 64,
+    min_planes: int | None = None,
+) -> np.ndarray:
+    """Create a visual-hull occupancy grid from axial/coronal/sagittal silhouettes."""
+    coords = np.linspace(-1.0, 1.0, grid_size, dtype=np.float32)
+    x, y, z = np.meshgrid(coords, coords, coords, indexing="ij")
+    votes = np.zeros((grid_size, grid_size, grid_size), dtype=np.uint8)
+    num_planes = 0
+    if "axial" in plane_masks:
+        votes += _mask_contains(plane_masks["axial"], x.ravel(), y.ravel()).reshape(votes.shape)
+        num_planes += 1
+    if "coronal" in plane_masks:
+        votes += _mask_contains(plane_masks["coronal"], x.ravel(), z.ravel()).reshape(votes.shape)
+        num_planes += 1
+    if "sagittal" in plane_masks:
+        votes += _mask_contains(plane_masks["sagittal"], y.ravel(), z.ravel()).reshape(votes.shape)
+        num_planes += 1
+    if num_planes == 0:
+        return np.zeros((grid_size, grid_size, grid_size), dtype=bool)
+    threshold = min_planes if min_planes is not None else min(2, num_planes)
+    return votes >= threshold
+
+
 def silhouette_filter_points(points: np.ndarray, plane_masks: dict[str, np.ndarray]) -> np.ndarray:
     points = normalize_point_cloud(points)
     if len(points) == 0:
@@ -136,10 +161,34 @@ def silhouette_constrained_fusion(
     return random_sample(filtered, target_points)
 
 
-def load_plane_masks_from_records(records: list[dict]) -> dict[str, np.ndarray]:
+def resolve_record_path(path_value: str | Path, base_dir: str | Path | None = None) -> Path:
+    path = Path(path_value)
+    if path.is_absolute() or path.exists():
+        return path
+    if base_dir is not None:
+        candidate = Path(base_dir) / path.name
+        if candidate.exists():
+            return candidate
+        candidate = Path(base_dir) / path
+        if candidate.exists():
+            return candidate
+    return path
+
+
+def load_plane_masks_from_records(records: list[dict], base_dir: str | Path | None = None) -> dict[str, np.ndarray]:
     best: dict[str, dict] = {}
     for record in records:
         plane = record["plane"]
         if plane not in best or int(record.get("area", 0)) > int(best[plane].get("area", 0)):
             best[plane] = record
-    return {plane: load_mask_png(record["mask_path"]) for plane, record in best.items()}
+    return {plane: load_mask_png(resolve_record_path(record["mask_path"], base_dir=base_dir)) for plane, record in best.items()}
+
+
+def select_records_by_rank(records: list[dict], max_rank_per_plane: int | None = None) -> list[dict]:
+    if max_rank_per_plane is None or max_rank_per_plane <= 0:
+        return list(records)
+    return [record for record in records if int(record.get("rank", 9999)) <= max_rank_per_plane]
+
+
+def candidate_path_for_record(candidates_dir: str | Path, record: dict) -> Path:
+    return Path(candidates_dir) / f"{record['plane']}_{int(record['rank']):02d}.ply"

@@ -16,7 +16,17 @@ if str(PROJECT_ROOT) not in sys.path:
 from medmvsam3d.io_utils import ensure_dir, load_point_cloud_ply
 
 
-COLUMN_TITLES = ["Input slice", "Best single", "Union fusion", "Silhouette fusion", "Ground truth"]
+DEFAULT_COLUMNS = ["input", "best", "union", "silhouette", "visual_hull", "top1", "gt"]
+COLUMN_TITLES = {
+    "input": "Input slice",
+    "best": "Best single",
+    "union": "Union fusion",
+    "silhouette": "Silhouette fusion",
+    "visual_hull": "Visual hull",
+    "top1": "Top-1 union",
+    "refined": "Refined",
+    "gt": "Ground truth",
+}
 
 
 def read_rows(path: Path) -> list[dict[str, str]]:
@@ -53,7 +63,12 @@ def find_input_slice(case_dir: Path, selected_slice: str) -> Path:
     raise FileNotFoundError(f"No slice record found for {selected_slice} in {slices_json}")
 
 
-def point_projection(points: np.ndarray, size: int = 256, axes: tuple[int, int] = (0, 1)) -> Image.Image:
+def point_projection(
+    points: np.ndarray,
+    size: int = 256,
+    axes: tuple[int, int] = (0, 1),
+    bounds: tuple[np.ndarray, np.ndarray] | None = None,
+) -> Image.Image:
     image = np.full((size, size), 255, dtype=np.uint8)
     if len(points) == 0:
         return Image.fromarray(image)
@@ -61,14 +76,32 @@ def point_projection(points: np.ndarray, size: int = 256, axes: tuple[int, int] 
     xy = xy[np.isfinite(xy).all(axis=1)]
     if len(xy) == 0:
         return Image.fromarray(image)
-    xy = (xy - xy.min(axis=0, keepdims=True)) / np.maximum(np.ptp(xy, axis=0, keepdims=True), 1e-6)
+    if bounds is None:
+        lo = xy.min(axis=0, keepdims=True)
+        hi = xy.max(axis=0, keepdims=True)
+    else:
+        lo = bounds[0][list(axes)].reshape(1, 2)
+        hi = bounds[1][list(axes)].reshape(1, 2)
+    xy = (xy - lo) / np.maximum(hi - lo, 1e-6)
     ij = np.clip(np.round(xy * (size - 1)).astype(int), 0, size - 1)
     image[ij[:, 1], ij[:, 0]] = 0
     return Image.fromarray(image).convert("RGB")
 
 
-def load_projection(path: Path, size: int) -> Image.Image:
-    return point_projection(load_point_cloud_ply(path), size=size)
+def load_projection(path: Path, size: int, bounds: tuple[np.ndarray, np.ndarray] | None = None) -> Image.Image:
+    return point_projection(load_point_cloud_ply(path), size=size, bounds=bounds)
+
+
+def finite_bounds(point_sets: list[np.ndarray]) -> tuple[np.ndarray, np.ndarray]:
+    valid = [points[np.isfinite(points).all(axis=1)] for points in point_sets if len(points) > 0]
+    valid = [points for points in valid if len(points) > 0]
+    if not valid:
+        return np.array([-1, -1, -1], dtype=np.float32), np.array([1, 1, 1], dtype=np.float32)
+    stacked = np.concatenate(valid, axis=0)
+    lo = stacked.min(axis=0)
+    hi = stacked.max(axis=0)
+    pad = np.maximum((hi - lo) * 0.05, 1e-3)
+    return lo - pad, hi + pad
 
 
 def load_input_image(path: Path, size: int) -> Image.Image:
@@ -95,6 +128,14 @@ def main() -> None:
     parser.add_argument("--best-single", required=True, help="best_single_Ncases.csv")
     parser.add_argument("--cases", nargs="+", required=True, help="Case directory names, e.g. case000 case001 case003")
     parser.add_argument("--output", required=True)
+    parser.add_argument(
+        "--columns",
+        nargs="+",
+        default=DEFAULT_COLUMNS,
+        choices=list(COLUMN_TITLES),
+        help="Columns to render.",
+    )
+    parser.add_argument("--organ", default="liver")
     parser.add_argument("--cell-size", type=int, default=240)
     parser.add_argument("--label-height", type=int, default=34)
     parser.add_argument("--gap", type=int, default=12)
@@ -105,15 +146,16 @@ def main() -> None:
     cell = args.cell_size
     gap = args.gap
     label_h = args.label_height
-    width = len(COLUMN_TITLES) * cell + (len(COLUMN_TITLES) + 1) * gap
+    columns = args.columns
+    width = len(columns) * cell + (len(columns) + 1) * gap
     height = (len(args.cases) + 1) * (cell + label_h) + (len(args.cases) + 2) * gap
     canvas = Image.new("RGB", (width, height), "white")
     draw = ImageDraw.Draw(canvas)
 
     y = gap
-    for col, title in enumerate(COLUMN_TITLES):
+    for col, column in enumerate(columns):
         x = gap + col * (cell + gap)
-        draw_label(draw, (x + 4, y + 6), title)
+        draw_label(draw, (x + 4, y + 6), COLUMN_TITLES[column])
 
     for row_idx, case_name in enumerate(args.cases):
         case_dir = experiments_dir / case_name
@@ -122,13 +164,26 @@ def main() -> None:
         best = best_map[case_name]
         selected_slice = best["selected_slice"]
         candidate_name = selected_slice.replace("single_", "") + ".ply"
-        images = [
-            load_input_image(find_input_slice(case_dir, selected_slice), cell),
-            load_projection(case_dir / "candidates_real" / candidate_name, cell),
-            load_projection(case_dir / "fused_union_real.ply", cell),
-            load_projection(case_dir / "fused_silhouette_real.ply", cell),
-            load_projection(case_dir / "gt_liver.ply", cell),
-        ]
+        paths = {
+            "best": case_dir / "candidates_real" / candidate_name,
+            "union": case_dir / "fused_union_real.ply",
+            "silhouette": case_dir / "fused_silhouette_real.ply",
+            "visual_hull": case_dir / "visual_hull.ply",
+            "top1": case_dir / "fused_top1_union_real.ply",
+            "refined": case_dir / "refined_real.ply",
+            "gt": case_dir / f"gt_{args.organ}.ply",
+        }
+        point_sets = [load_point_cloud_ply(path) for key, path in paths.items() if key in columns and path.exists()]
+        bounds = finite_bounds(point_sets)
+        images = []
+        for column in columns:
+            if column == "input":
+                images.append(load_input_image(find_input_slice(case_dir, selected_slice), cell))
+            else:
+                path = paths[column]
+                if not path.exists():
+                    raise FileNotFoundError(f"Missing file for column '{column}': {path}")
+                images.append(load_projection(path, cell, bounds=bounds))
         y = gap + (row_idx + 1) * (cell + label_h + gap)
         draw_label(draw, (gap, y - label_h + 6), f"{case_name} ({selected_slice})")
         for col, image in enumerate(images):
@@ -144,4 +199,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

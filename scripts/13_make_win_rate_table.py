@@ -21,6 +21,9 @@ METHOD_NAMES = {
     "silhouette_fusion_real": "Silhouette fusion",
     "weighted_fusion_real": "Weighted fusion",
     "med_mv_sam3d_real": "Anatomical refinement",
+    "visual_hull": "Visual hull",
+    "top1_union_fusion_real": "Top-1 union fusion",
+    "top1_silhouette_fusion_real": "Top-1 silhouette fusion",
 }
 
 
@@ -42,6 +45,12 @@ def main() -> None:
     parser.add_argument("--experiments-dir", required=True, help="Directory containing case*/summary_fusion.csv")
     parser.add_argument("--best-single", required=True, help="best_single_Ncases.csv")
     parser.add_argument("--output", required=True, help="Output win_rate_Ncases.csv")
+    parser.add_argument(
+        "--summary-files",
+        nargs="+",
+        default=["summary_fusion.csv"],
+        help="Per-case summary CSV names to merge, e.g. summary_fusion.csv summary_enhanced.csv",
+    )
     args = parser.parse_args()
 
     experiments_dir = Path(args.experiments_dir)
@@ -53,11 +62,13 @@ def main() -> None:
 
     for best in best_rows:
         case_dir = experiments_dir / best["case_dir"]
-        summary_path = case_dir / "summary_fusion.csv"
-        if not summary_path.exists():
-            print(f"Warning: missing {summary_path}")
-            continue
-        fusion_rows = {row["method"]: row for row in read_rows(summary_path)}
+        fusion_rows = {}
+        for summary_name in args.summary_files:
+            summary_path = case_dir / summary_name
+            if not summary_path.exists():
+                print(f"Warning: missing {summary_path}")
+                continue
+            fusion_rows.update({row["method"]: row for row in read_rows(summary_path)})
         for method in methods:
             if method not in fusion_rows:
                 continue
@@ -103,4 +114,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

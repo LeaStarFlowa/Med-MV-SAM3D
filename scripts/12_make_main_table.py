@@ -20,6 +20,9 @@ METHOD_NAMES = {
     "silhouette_fusion_real": "Silhouette fusion",
     "weighted_fusion_real": "Weighted fusion",
     "med_mv_sam3d_real": "Anatomical refinement",
+    "visual_hull": "Visual hull",
+    "top1_union_fusion_real": "Top-1 union fusion",
+    "top1_silhouette_fusion_real": "Top-1 silhouette fusion",
 }
 
 METHOD_ORDER = [
@@ -27,6 +30,9 @@ METHOD_ORDER = [
     "silhouette_fusion_real",
     "weighted_fusion_real",
     "med_mv_sam3d_real",
+    "visual_hull",
+    "top1_union_fusion_real",
+    "top1_silhouette_fusion_real",
 ]
 
 
@@ -64,12 +70,15 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Create a paper-style main result table from best-single and fusion summaries.")
     parser.add_argument("--best-single", required=True, help="best_single_Ncases.csv")
     parser.add_argument("--fusion-summary", required=True, help="summary_fusion_Ncases.csv")
+    parser.add_argument("--extra-summary", action="append", default=[], help="Additional summary CSV to append.")
     parser.add_argument("--output", required=True, help="Output main_table_Ncases.csv")
     parser.add_argument("--include-std", action="store_true", help="Write values as mean +/- std.")
     args = parser.parse_args()
 
     best_rows = read_rows(Path(args.best_single))
     fusion_rows = read_rows(Path(args.fusion_summary))
+    for extra in args.extra_summary:
+        fusion_rows.extend(read_rows(Path(extra)))
     out_rows: list[dict[str, str]] = []
 
     best_summary = metric_summary(best_rows)

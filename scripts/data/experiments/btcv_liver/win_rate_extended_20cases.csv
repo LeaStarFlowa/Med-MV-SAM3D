@@ -1,0 +1,8 @@
+method,method_key,num_cases,mean_metric_wins_per_case,dice_wins,dice_win_rate,voxel_iou_wins,voxel_iou_win_rate,voxel_dice_wins,voxel_dice_win_rate,f1_001_wins,f1_001_win_rate,cd_wins,cd_win_rate,emd_wins,emd_win_rate,hd95_wins,hd95_win_rate,asd_wins,asd_win_rate,volume_error_wins,volume_error_win_rate
+Union fusion,union_fusion_real,20,8.4000,20/20,1.0000,20/20,1.0000,20/20,1.0000,12/20,0.6000,19/20,0.9500,17/20,0.8500,20/20,1.0000,20/20,1.0000,20/20,1.0000
+Silhouette fusion,silhouette_fusion_real,20,7.6000,18/20,0.9000,18/20,0.9000,18/20,0.9000,9/20,0.4500,18/20,0.9000,16/20,0.8000,18/20,0.9000,18/20,0.9000,19/20,0.9500
+Weighted fusion,weighted_fusion_real,20,7.4500,16/20,0.8000,16/20,0.8000,16/20,0.8000,5/20,0.2500,19/20,0.9500,19/20,0.9500,19/20,0.9500,19/20,0.9500,20/20,1.0000
+Anatomical refinement,med_mv_sam3d_real,20,7.1000,18/20,0.9000,18/20,0.9000,18/20,0.9000,2/20,0.1000,18/20,0.9000,15/20,0.7500,18/20,0.9000,18/20,0.9000,17/20,0.8500
+Visual hull,visual_hull,20,6.1500,13/20,0.6500,13/20,0.6500,13/20,0.6500,2/20,0.1000,18/20,0.9000,18/20,0.9000,18/20,0.9000,18/20,0.9000,10/20,0.5000
+Top-1 union fusion,top1_union_fusion_real,20,7.0000,16/20,0.8000,16/20,0.8000,16/20,0.8000,5/20,0.2500,18/20,0.9000,16/20,0.8000,18/20,0.9000,17/20,0.8500,18/20,0.9000
+Top-1 silhouette fusion,top1_silhouette_fusion_real,20,5.7500,11/20,0.5500,11/20,0.5500,11/20,0.5500,5/20,0.2500,17/20,0.8500,15/20,0.7500,16/20,0.8000,15/20,0.7500,14/20,0.7000

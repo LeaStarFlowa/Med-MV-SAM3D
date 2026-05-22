@@ -136,6 +136,12 @@ def main() -> None:
         help="Columns to render.",
     )
     parser.add_argument("--organ", default="liver")
+    parser.add_argument(
+        "--projection-mode",
+        choices=["per-object", "shared-row"],
+        default="per-object",
+        help="per-object shows each shape clearly; shared-row uses one scale per row to expose coordinate mismatch.",
+    )
     parser.add_argument("--cell-size", type=int, default=240)
     parser.add_argument("--label-height", type=int, default=34)
     parser.add_argument("--gap", type=int, default=12)
@@ -174,7 +180,7 @@ def main() -> None:
             "gt": case_dir / f"gt_{args.organ}.ply",
         }
         point_sets = [load_point_cloud_ply(path) for key, path in paths.items() if key in columns and path.exists()]
-        bounds = finite_bounds(point_sets)
+        bounds = finite_bounds(point_sets) if args.projection_mode == "shared-row" else None
         images = []
         for column in columns:
             if column == "input":
